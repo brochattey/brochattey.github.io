@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+//////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Coded by Broch Attey
+// Copyright 2022 by Broch Attey
+// Year: 2022
+// Created for the purpose of playing Wordle (created by Josh Wardle) with JHS students.
+// All words were taken from the glossary pages of the Sunshine English Course textbooks.
+// This page was created to work offline with no dependencies to external sources.
+// It was designed for both keyboard and touch interfaces.
+//
+//////////////////////////////////////////////////////////////////////////////////////////////
+-->
+    <head>
+        <title>英語 WORDLE</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <style type="text/css">
+            body { text-align:center; font-family:Arial; }
+            #page_container { z-index:0; position:relative; top:0px; left:0px; }
+            .page_title { font-size:36pt; color:#6aaa64; font-family:Arial, sans-serif; font-weight:bold; -webkit-text-stroke: 1px black; text-shadow: 2px 2px 4px #636363; }
+            .guess_container { padding:2px; }
+            .guess {height:60px; width:40px; border:2px black solid; font-size:24pt; font-weight:bold; text-align:center; }
+            .button_container { padding:2px;}
+            .alphabet_button { height:50px; width:50px; border:2px black solid; font-size:24pt; font-weight:bold; }
+            .enter_button { height:50px; border:2px black solid; font-size:24pt; font-weight:bold; }
+            .back_button { height:50px; border:2px black solid; font-size:24pt;font-weight:bold;  }
+            .replay_container { padding:10px; visibility: hidden;}
+            .replay_button { height:50px; border:2px black solid; font-size:24pt; font-weight:bold; background-color:#c9b458; }
+            .user_msg {text-align: center; font-size:24pt; font-weight:bold; padding:10px; }
+            #gray_screen_container { z-index:-2; position:fixed; top:0%; left:0%; background-color:#000000; width:100%; height:100%; opacity:0.7;}
+            #rules_container { z-index:-1; position:fixed; top:20%; left:50%; transform: translate(-50%, -20%); text-align: left; font-size:14pt; background-color:#FFFFFF; padding:20px; width:28%; border:3px solid #000000; }
+            #rules_open_box { border:2px solid #000000; font-weight:bold; padding:3px; cursor: pointer; text-align: center; border-radius: 10px; }
+            #rules_close_box { border:2px solid #000000; font-weight:bold; font-size:8pt; padding:3px; cursor: pointer; text-align: center; border-radius: 10px; }
+        </style>
+        
+        <script type="text/javascript">
+            var game_over = 0;
+            var curr_guess = 1;
+            var curr_pos = 1;
+            var curr_active = 'guess_' + curr_guess + '_' + curr_pos;
+            var input_color_inactive = '2px black solid';
+            var input_color_active = '2px blue solid';
+            var button_color_default = '#d3d6da';
+            var button_color_correct = '#6aaa64';
+            var button_color_in_word = '#c9b458';
+            var button_color_not_in_word = '#787c7e';
+            var input_color_correct = '#6aaa64';
+            var input_color_in_word = '#c9b458';
+            var input_color_not_in_word = '#787c7e';
+            var msg_color_correct = '#6aaa64';
+            var msg_color_game_over = '#ff5733';
+            var msg_color_not_valid_word = '#ff5733';
+            const good_chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'ENTER', 'BACKSPACE'];
+
+            // Word lists
+            var valid_words = [];
+            const es = ['about','again','apple','April','baker','beach','black','brown','chair','China','class','clean','color','dance','dream','drink','Egypt','eight','enjoy','fifth','fifty','first','forty','fruit','glove','grape','great','green','happy','hello','horse','house','India','Italy','Japan','juice','Korea','leave','lemon','lunch','March','melon','mouth','music','never','ninth','nurse','panda','peach','piano','pilot','pizza','place','queen','rainy','right','river','rugby','ruler','salad','salty','seven','sheep','short','sixth','sixty','small','snake','snowy','sorry','Spain','speak','sport','stand','steak','study','sunny','sweet','table','tenth','thank','think','third','three','tiger','tired','under','visit','watch','where','white','world','would'];
+            const ichi_nen = ['adult','after','angel','anime','apron','beast','break','broke','candy','catch','check','cheer','child','clear','clerk','climb','clock','close','comic','court','crane','drone','early','event','every','fairy','floor','flute','found','fresh','front','funny','hobby','Kenya','koala','large','learn','light','lucky','manga','mango','month','movie','night','often','other','party','phone','plane','point','proud','quiet','quilt','reach','relax','robot','round','sauna','share','shoot','skate','sleep','slope','smart','smile','snack','sound','speed','staff','start','steam','stick','still','tasty','teach','their','there','these','thing','those','today','topic','touch','towel','train','uncle','until','video','which','whose','write','young','yours'];
+            const ni_nen = ['above','actor','agree','alone','along','among','award','bacon','blame','bored','bring','build','built','carry','cheap','chess','cloth','coast','could','cover','dirty','eaten','email','enter','fight','flour','goods','guide','heard','heart','heavy','hurry','inner','issue','knife','known','ladle','later','limit','lives','local','lodge','lotus','maybe','meter','minus','model','money','noise','novel','onion','order','paint','paper','peace','penny','piece','plant','prize','ready','renew','rifle','sauce','scale','score','shelf','shout','since','slept','smoke','solve','space','spite','spoke','steal','stole','story','stove','sugar','sweat','taken','taste','teeth','thick','tooth','treat','trick','truck','truly','twice','voice','while','windy','woman','worry','wrong','wrote','yummy'];
+            const san_nen = [];
+
+            // Let students enter words from all grade levels
+            valid_words = valid_words.concat(es, ichi_nen, ni_nen, san_nen);
+
+            // See if a grade level has already been chosen
+            const urlParams = new URLSearchParams(window.location.search);
+            const chosen_grade = urlParams.get('level');
+
+            // Build the word list for the chosen level
+            var grade_level = 0;
+            var word_list = [];
+            var correct_word = '';
+            change_grade((chosen_grade == null) ? 1 : chosen_grade);
+
+            // Define the list of words by grade
+            function change_grade(grade)
+            {
+                // If the grade has changed
+                if (grade_level != grade) {
+                    // Update the grade level
+                    grade_level = grade;
+
+                    // Reset the word list
+                    word_list = [];
+
+                    // Build a new word list
+                    if (grade == 1) {
+                        word_list = word_list.concat(es);
+                    } else if (grade == 2) {
+                        word_list = word_list.concat(ichi_nen)
+                    } else if (grade == 3) {
+                        word_list = word_list.concat(ni_nen);
+                    } else if (grade == 4) {
+                        word_list = word_list.concat(san_nen);
+                    } else {
+                        word_list = word_list.concat(valid_words);
+                    }
+
+                    // Get new answer
+                    var randomInt = getRandomInt(0,word_list.length-1);
+                    correct_word = word_list[randomInt].toUpperCase();
+
+                    // For testing
+                    //window.alert(correct_word + " | " + word_list.length);
+                }
+            }
+
+            // Used to choose a random word
+            function getRandomInt(min, max) 
+            {
+                var min = Math.ceil(min);
+                var max = Math.floor(max);
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            // Read in key presses
+            window.addEventListener("keydown", function (event) {
+                // Do nothing if the event was already processed
+                if (event.defaultPrevented) { return; }
+
+                var key = event.key.toUpperCase();
+
+                // Check if the keypress is an accepted character
+                var okay = 0;
+                for (var i = 0; i < good_chars.length; i++) {
+                    if (good_chars[i] == key) {
+                        okay = 1;
+                        break;
+                    }
+                }
+
+                // If okay, process the keypress
+                if (okay) { 
+                    if (key == "BACKSPACE") { back_click(); event.preventDefault(); }
+                    else if (key == "ENTER") { enter_click(); }    
+                    else { alphabet_click(key); }
+                }
+
+            }, true);
+
+            // Input a letter
+            function alphabet_click(letter)
+            {
+                if (!game_over) {
+                    letter = letter.toUpperCase();
+
+                    // Refresh the style on the current box
+                    refresh_active();
+
+                    // Reset styling on the letter just entered
+                    document.getElementById(curr_active).style.border = input_color_inactive;
+                    document.getElementById(curr_active).value = letter.toUpperCase();
+
+                    // Move to the next box
+                    curr_pos = curr_pos + (curr_pos < 6 ? 1 : 0);
+                    if (curr_pos > 5) { curr_pos = 5; }
+
+                    // Set the styling of the next box
+                    refresh_active();
+                    document.getElementById(curr_active).style.border = input_color_active;
+                }
+            }
+
+            // Process a word
+            function enter_click()
+            {
+                if (!game_over) {
+                    // Get guessed word
+                    var guess_word = ""
+                    for (var i = 1; i <= 5; i++) {
+                        guess_word += document.getElementById('guess_' + curr_guess + '_' + i).value.toUpperCase();
+                    }
+
+                    // Check the length
+                    if (guess_word.length == 5) {
+
+                        // Check that the word is in the valid list
+                        var okay = 0;
+                        for (var i = 0; i < valid_words.length; i++) {
+                            if (valid_words[i].toUpperCase() == guess_word) {
+                                okay = 1;
+                                break;
+                            }
+                        }
+
+                        // Word is valid
+                        if (okay) {
+                            document.getElementById(curr_active).style.border = input_color_inactive;
+
+                            // Check if the word is the correct answer
+                            check_guess(guess_word);
+
+                            // Move to next row
+                            curr_guess++;
+                            curr_pos = 1;
+                            refresh_active();
+                        } else {
+                            document.getElementById('user_msg').style.color = msg_color_not_valid_word;
+                            document.getElementById('user_msg').textContent = "The word isn't in the word list!";
+                        }
+
+                    } else {
+                        // Less than 5 characters
+                        document.getElementById('user_msg').style.color = msg_color_not_valid_word;
+                        document.getElementById('user_msg').textContent = "The word must be 5 letters";
+                    }
+                }
+            }
+
+            // Check the guessed word
+            function check_guess(guess_word)
+            {
+                var correct_count = 0;
+
+                // Check each letter individually
+                for (var i = 1; i <= 5; i++) {
+                    var guess_letter = document.getElementById('guess_' + curr_guess + '_' + i).value.toUpperCase();
+
+                    if (guess_letter == correct_word.charAt(i-1)) {
+                        document.getElementById('guess_' + curr_guess + '_' + i).style.backgroundColor = input_color_correct;
+                        document.getElementById('alphabet_' + guess_letter.toLowerCase()).style.backgroundColor = button_color_correct;
+                        correct_count++;
+                    } else if (correct_word.indexOf(guess_letter) >= 0) {
+                        document.getElementById('guess_' + curr_guess + '_' + i).style.backgroundColor = input_color_in_word;
+                        document.getElementById('alphabet_' + guess_letter.toLowerCase()).style.backgroundColor = button_color_in_word;
+                    } else {
+                        document.getElementById('guess_' + curr_guess + '_' + i).style.backgroundColor = input_color_not_in_word;
+                        document.getElementById('alphabet_' + guess_letter.toLowerCase()).style.backgroundColor = button_color_not_in_word;
+                    }
+                }
+
+                // All 5 letters are correct
+                if (correct_count == 5) {
+                    game_over = 1;
+                    document.getElementById('user_msg').style.color = msg_color_correct;
+                    document.getElementById('user_msg').textContent = "Congratulations! " + correct_word + " is correct!";
+                    document.getElementById('replay_container').style.visibility = 'visible';
+
+                // Failed to guess within 6 tries
+                } else if (curr_guess >= 6) {
+                    game_over = 1;
+                    document.getElementById('user_msg').style.color = msg_color_game_over;
+                    document.getElementById('user_msg').textContent = "Sorry! The word was " + correct_word;
+                    document.getElementById('replay_container').style.visibility = 'visible';
+                }
+
+            }
+
+            // Restart game
+            function new_game()
+            {
+                window.open('Wordle.html?level=' + document.querySelector('input[name="grade_level"]:checked').value, '_self');
+            }
+
+            // Backspace function
+            function back_click()
+            {
+                if (!game_over) {
+                    curr_active = 'guess_' + curr_guess + '_' + curr_pos;
+                    document.getElementById(curr_active).style.border = input_color_inactive;
+                    curr_pos = (curr_pos == 5 && document.getElementById(curr_active).value != '') ? 6 : curr_pos;
+                    curr_pos = curr_pos - (curr_pos > 1 ? 1 : 0);
+                    refresh_active();
+                    document.getElementById(curr_active).value = '';
+                    document.getElementById('user_msg').innerHTML = '&nbsp;';   
+                }
+            }
+
+            // Move the cursor and active cell
+            function refresh_active()
+            {
+                curr_active = 'guess_' + curr_guess + '_' + curr_pos;
+                document.getElementById(curr_active).style.border = input_color_active;
+            }
+
+            // Opens or closes the rules box
+            function open_close_rules() 
+            {
+                var page_container = document.getElementById('page_container');
+                var rules_container = document.getElementById('rules_container');
+                var gray_container = document.getElementById('gray_screen_container');
+
+                // Rules are open
+                if (rules_container.style.display === 'none') {
+                    rules_container.style.display = 'block';
+                    gray_container.style.display = 'block';
+                    page_container.style.zIndex = -2;
+                    gray_container.style.zIndex = -1;
+                    rules_container.style.zIndex = 0;
+                    game_over = 1; // Prevent input
+
+                // Rules are closed
+                } else {
+                    rules_container.style.display = 'none';
+                    gray_container.style.display = 'none';
+                    page_container.style.zIndex = 0;
+                    rules_container.style.zIndex = -1;
+                    gray_container.style.zIndex = -2;
+                    game_over = 0; // Allow input
+                }
+
+            }
+        </script>
+    </head>
+    
+    <body>
+        <div id="gray_screen_container" style="display:none;">&nbsp;</div>
+        <div id="rules_container" style="display:none;" lang="ja">
+            <div>
+                <div style="float:left; width:90%; padding-top:15px;">WORDLEを6回のトライで推測しましょう。</div>
+                <div style="float:left; width:10%; text-align:right;"><span id="rules_close_box" onclick="open_close_rules();">X</span></div>
+                <div style="clear:both;"></div>
+            </div>
+            <p>それぞれの推測は5文字の単語でなければなりません。<br />Enterボタンで決定です。</p>
+            <p>単語の推測決定後は、どの程度あなたの推測が正解の単語と近かったかをタイルの色で表します。</p>
+            <p><strong><span style="color:#6aaa64;">E</span>GYPT</strong></p>
+            <p>Eは正解英単語の中にあり、位置も正しいです。</p>
+            <p><strong>SM<span style="color:#c9b458;">A</span>RT</strong></p>
+            <p>Aは正解英単語の中に含まれますが、位置は違います。</p>
+            <p><strong>TIR<span style="color:#787c7e;">E</span>D</strong></p>
+            <p>Eは正解の英単語に含まれません。</p>
+        </div>
+        <div id="page_container">
+            <div class="page_title" lang="ja">英語 <ruby>WORDLE<rt>ワードル</rt></ruby></div>
+            <form>
+            <div style="text-align: center; padding:10px;">
+                <input type="radio" id="radio_1" name="grade_level" value="1" onclick="change_grade(this.value)" /><label for="radio_1">ES</label>&nbsp;&nbsp;
+                <input type="radio" id="radio_2" name="grade_level" value="2" onclick="change_grade(this.value)" /><label for="radio_2">1st Year</label>&nbsp;&nbsp;
+                <input type="radio" id="radio_3" name="grade_level" value="3" onclick="change_grade(this.value)" /><label for="radio_3">2nd Year</label>&nbsp;&nbsp;
+                <input type="radio" id="radio_4" name="grade_level" value="4" onclick="change_grade(this.value)" /><label for="radio_4">3rd Year</label>&nbsp;&nbsp;
+                <input type="radio" id="radio_5" name="grade_level" value="5" onclick="change_grade(this.value)" /><label for="radio_5">All</label>&nbsp;&nbsp;
+                <span id="rules_open_box" onclick="open_close_rules();">?</span>
+            </div>
+            <script>
+                // Set the default radio button
+                if (grade_level == 5) { 
+                    var set_radio = document.getElementById('radio_5'); 
+                    set_radio.checked = true;
+                } else if (grade_level == 4) { 
+                    var set_radio = document.getElementById('radio_4'); 
+                    set_radio.checked = true;
+                } else if (grade_level == 3) { 
+                    var set_radio = document.getElementById('radio_3'); 
+                    set_radio.checked = true;
+                } else if (grade_level == 2) {
+                    var set_radio = document.getElementById('radio_2');
+                    set_radio.checked = true;
+                } else { 
+                    var set_radio = document.getElementById('radio_1');
+                    set_radio.checked = true;
+                }
+            </script> 
+            <div>
+                <div class="guess_container">
+                    <input type="text" id="guess_1_1" name="guess_1_1" value="" readonly class="guess"/>
+                    <input type="text" id="guess_1_2" name="guess_1_2" value="" readonly class="guess"/>
+                    <input type="text" id="guess_1_3" name="guess_1_3" value="" readonly class="guess"/>
+                    <input type="text" id="guess_1_4" name="guess_1_4" value="" readonly class="guess"/>
+                    <input type="text" id="guess_1_5" name="guess_1_5" value="" readonly class="guess"/>
+                </div>
+                <div class="guess_container">
+                    <input type="text" id="guess_2_1" name="guess_2_1" value="" readonly class="guess"/>
+                    <input type="text" id="guess_2_2" name="guess_2_2" value="" readonly class="guess"/>
+                    <input type="text" id="guess_2_3" name="guess_2_3" value="" readonly class="guess"/>
+                    <input type="text" id="guess_2_4" name="guess_2_4" value="" readonly class="guess"/>
+                    <input type="text" id="guess_2_5" name="guess_2_5" value="" readonly class="guess"/>
+                </div>
+                <div class="guess_container">
+                    <input type="text" id="guess_3_1" name="guess_3_1" value="" readonly class="guess"/>
+                    <input type="text" id="guess_3_2" name="guess_3_2" value="" readonly class="guess"/>
+                    <input type="text" id="guess_3_3" name="guess_3_3" value="" readonly class="guess"/>
+                    <input type="text" id="guess_3_4" name="guess_3_4" value="" readonly class="guess"/>
+                    <input type="text" id="guess_3_5" name="guess_3_5" value="" readonly class="guess"/>
+                </div>
+                <div class="guess_container">
+                    <input type="text" id="guess_4_1" name="guess_4_1" value="" readonly class="guess"/>
+                    <input type="text" id="guess_4_2" name="guess_4_2" value="" readonly class="guess"/>
+                    <input type="text" id="guess_4_3" name="guess_4_3" value="" readonly class="guess"/>
+                    <input type="text" id="guess_4_4" name="guess_4_4" value="" readonly class="guess"/>
+                    <input type="text" id="guess_4_5" name="guess_4_5" value="" readonly class="guess"/>
+                </div>
+                <div class="guess_container">
+                    <input type="text" id="guess_5_1" name="guess_5_1" value="" readonly class="guess"/>
+                    <input type="text" id="guess_5_2" name="guess_5_2" value="" readonly class="guess"/>
+                    <input type="text" id="guess_5_3" name="guess_5_3" value="" readonly class="guess"/>
+                    <input type="text" id="guess_5_4" name="guess_5_4" value="" readonly class="guess"/>
+                    <input type="text" id="guess_5_5" name="guess_5_5" value="" readonly class="guess"/>
+                </div>
+                <div class="guess_container">
+                    <input type="text" id="guess_6_1" name="guess_6_1" value="" readonly class="guess"/>
+                    <input type="text" id="guess_6_2" name="guess_6_2" value="" readonly class="guess"/>
+                    <input type="text" id="guess_6_3" name="guess_6_3" value="" readonly class="guess"/>
+                    <input type="text" id="guess_6_4" name="guess_6_4" value="" readonly class="guess"/>
+                    <input type="text" id="guess_6_5" name="guess_6_5" value="" readonly class="guess"/>
+                </div>
+            </div>
+            <div>&nbsp;</div>
+            <div>
+                <div class="button_container">
+                    <input type="button" id="alphabet_a" name"alphabet_a" value="A" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_b" name"alphabet_b" value="B" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_c" name"alphabet_c" value="C" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_d" name"alphabet_d" value="D" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_e" name"alphabet_e" value="E" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_f" name"alphabet_f" value="F" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_g" name"alphabet_g" value="G" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_h" name"alphabet_h" value="H" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_i" name"alphabet_i" value="I" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_j" name"alphabet_j" value="J" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                </div>
+                <div class="button_container">
+                    <input type="button" id="alphabet_k" name"alphabet_k" value="K" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_l" name"alphabet_l" value="L" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_m" name"alphabet_m" value="M" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_n" name"alphabet_n" value="N" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_o" name"alphabet_o" value="O" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_p" name"alphabet_p" value="P" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_q" name"alphabet_q" value="Q" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_r" name"alphabet_r" value="R" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_s" name"alphabet_s" value="S" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                </div>
+                <div class="button_container">
+                    <input type="button" id="btn_enter" name"btn_enter" value="ENTER" class="enter_button" onclick="enter_click()"/>
+                    <input type="button" id="alphabet_t" name"alphabet_t" value="T" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_u" name"alphabet_u" value="U" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_v" name"alphabet_v" value="V" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_w" name"alphabet_w" value="W" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_x" name"alphabet_x" value="X" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_y" name"alphabet_y" value="Y" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="alphabet_z" name"alphabet_z" value="Z" class="alphabet_button" onclick="alphabet_click(this.value)"/>
+                    <input type="button" id="btn_backspace" name"btn_backspace" value="BACK" class="back_button" onclick="back_click()"/>
+                </div>
+            </div>
+            <div id="user_msg" class="user_msg">&nbsp;</div>
+            <div id="replay_container" class="replay_container">
+                <input type="button" id="btn_replay" name"btn_replay" value="REPLAY" class="replay_button" onclick="new_game()"/>
+            </div>
+            </form>
+        </div>
+        <div style="color:#FFFFFF;">Copyright &copy; 2022 by Broch Attey</div>
+    </body>
+</html>
