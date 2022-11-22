@@ -309,9 +309,6 @@
             // Restart game
             function new_game()
             {
-                // Close the results box
-                open_close_popup('replay');
-                
                 // Reset guess boxes
                 for (var x = 1; x <= 6; x++) {
                     for (var y = 1; y <= 5; y++) {
@@ -365,6 +362,14 @@
                 if (document.getElementById(curr_active) != null) {
                     document.getElementById(curr_active).style.border = input_color_active;   
                 }
+            }
+            
+            function replay_click()
+            {
+                // Close the results box
+                open_close_popup('replay');
+                
+                new_game();
             }
 
             
@@ -473,7 +478,7 @@
         </div>
         <div id="replay_container" style="display:none;">
             <div id="results_msg" class="results_msg">&nbsp;</div>
-            <div><input type="button" id="btn_replay" name="btn_replay" value="REPLAY" class="replay_button" onclick="new_game()"/></div>
+            <div><input type="button" id="btn_replay" name="btn_replay" value="REPLAY" class="replay_button" onclick="replay_click()"/></div>
         </div>
         <div id="page_container">
             <div class="page_title" lang="ja">英語 <ruby>WORDLE<rt>ワードル</rt></ruby></div>
