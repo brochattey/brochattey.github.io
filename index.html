@@ -276,7 +276,10 @@
                 
                 // Save the word to the cookie
                 if (game_over) {
-                    setCookie('words', getCookie('words') + '|' + correct_word, 0);
+                    var seen_words = getCookie('words');
+                    if (seen_words != null) {
+                        setCookie('words', seen_words + '|' + correct_word, 0);   
+                    }
                 }
 
             }
