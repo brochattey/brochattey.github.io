@@ -26,10 +26,11 @@
             .alphabet_button { height:50px; width:50px; border:2px black solid; font-size:24pt; font-weight:bold; background-color:#d3d6da; }
             .enter_button { height:50px; border:2px black solid; font-size:24pt; font-weight:bold; background-color:#d3d6da; }
             .back_button { height:50px; border:2px black solid; font-size:24pt;font-weight:bold;  background-color:#d3d6da; }
-            .replay_container { padding:10px; visibility: hidden;}
+            #replay_container { z-index:-2; position:fixed; top:20%; left:50%; transform: translate(-50%, -20%); background-color:#FFFFFF; padding:20px; width:40%; border:3px solid #000000; }
             .replay_button { height:50px; border:2px black solid; font-size:24pt; font-weight:bold; background-color:#c9b458; }
+            .results_msg {text-align: center; font-size:24pt; font-weight:bold; padding:10px; }
             .user_msg {text-align: center; font-size:24pt; font-weight:bold; padding:10px; }
-            #gray_screen_container { z-index:-2; position:fixed; top:0%; left:0%; background-color:#000000; width:100%; height:100%; opacity:0.7;}
+            #gray_screen_container { z-index:-99; position:fixed; top:0%; left:0%; background-color:#000000; width:100%; height:100%; opacity:0.7;}
             #rules_container { z-index:-1; position:fixed; top:20%; left:50%; transform: translate(-50%, -20%); text-align: left; font-size:14pt; background-color:#FFFFFF; padding:20px; width:28%; border:3px solid #000000; }
             #rules_open_box { border:2px solid #000000; font-weight:bold; padding:3px; cursor: pointer; text-align: center; border-radius: 10px; }
             #rules_close_box { border:2px solid #000000; font-weight:bold; font-size:8pt; padding:3px; cursor: pointer; text-align: center; border-radius: 10px; }
@@ -108,7 +109,7 @@
 
                 var seen_words = getCookie('words');
                 correct_word = '';
-                window.alert(seen_words);
+                //window.alert(seen_words);
                 
                 while (correct_word == '') {
                     // Get new answer
@@ -262,16 +263,16 @@
                 // All 5 letters are correct
                 if (correct_count == 5) {
                     game_over = 1;
-                    document.getElementById('user_msg').style.color = msg_color_correct;
-                    document.getElementById('user_msg').textContent = "Congratulations! " + correct_word + " is correct!";
-                    document.getElementById('replay_container').style.visibility = 'visible';
+                    document.getElementById('results_msg').style.color = msg_color_correct;
+                    document.getElementById('results_msg').textContent = 'Congratulations! "' + correct_word + '" is correct!';
+                    open_close_popup('replay');
 
                 // Failed to guess within 6 tries
                 } else if (curr_guess >= 6) {
                     game_over = 1;
-                    document.getElementById('user_msg').style.color = msg_color_game_over;
-                    document.getElementById('user_msg').textContent = "Sorry! The word was " + correct_word;
-                    document.getElementById('replay_container').style.visibility = 'visible';
+                    document.getElementById('results_msg').style.color = msg_color_game_over;
+                    document.getElementById('results_msg').textContent = 'Sorry! The word was "' + correct_word + '"';
+                    open_close_popup('replay');
                 }
                 
                 // Save the word to the cookie
@@ -308,6 +309,9 @@
             // Restart game
             function new_game()
             {
+                // Close the results box
+                open_close_popup('replay');
+                
                 // Reset guess boxes
                 for (var x = 1; x <= 6; x++) {
                     for (var y = 1; y <= 5; y++) {
@@ -333,10 +337,11 @@
                 
                 // Reset result box
                 document.getElementById('user_msg').textContent = "";
-                document.getElementById('replay_container').style.visibility = 'hidden';
+                document.getElementById('results_msg').textContent = "";
                 
                 // Select a new random word
                 select_new_word();
+                
             }
 
             // Backspace function
@@ -362,6 +367,34 @@
                 }
             }
 
+            
+            function open_close_popup(popup_type) 
+            {
+                var page_container = document.getElementById('page_container');
+                var popup_container = document.getElementById(popup_type + '_container');
+                var gray_container = document.getElementById('gray_screen_container');
+
+                // Popup is open
+                if (popup_container.style.display === 'none') {
+                    popup_container.style.display = 'block';
+                    gray_container.style.display = 'block';
+                    page_container.style.zIndex = -99;
+                    gray_container.style.zIndex = -1;
+                    popup_container.style.zIndex = 0;
+                    game_over = 1; // Prevent input
+
+                // Popup is closed
+                } else {
+                    popup_container.style.display = 'none';
+                    gray_container.style.display = 'none';
+                    page_container.style.zIndex = 0;
+                    popup_container.style.zIndex = -1;
+                    gray_container.style.zIndex = -99;
+                    game_over = 0; // Allow input
+                }
+
+            }
+            /*
             // Opens or closes the rules box
             function open_close_rules() 
             {
@@ -373,7 +406,7 @@
                 if (rules_container.style.display === 'none') {
                     rules_container.style.display = 'block';
                     gray_container.style.display = 'block';
-                    page_container.style.zIndex = -2;
+                    page_container.style.zIndex = -99;
                     gray_container.style.zIndex = -1;
                     rules_container.style.zIndex = 0;
                     game_over = 1; // Prevent input
@@ -384,11 +417,40 @@
                     gray_container.style.display = 'none';
                     page_container.style.zIndex = 0;
                     rules_container.style.zIndex = -1;
-                    gray_container.style.zIndex = -2;
+                    gray_container.style.zIndex = -99;
                     game_over = 0; // Allow input
                 }
 
             }
+            
+            // Opens or closes results box
+            function open_close_results() 
+            {
+                var page_container = document.getElementById('page_container');
+                var replay_container = document.getElementById('replay_container');
+                var gray_container = document.getElementById('gray_screen_container');
+
+                // Replay is open
+                if (replay_container.style.display === 'none') {
+                    replay_container.style.display = 'block';
+                    gray_container.style.display = 'block';
+                    page_container.style.zIndex = -99;
+                    gray_container.style.zIndex = -1;
+                    replay_container.style.zIndex = 0;
+                    game_over = 1; // Prevent input
+
+                // Replay is closed
+                } else {
+                    replay_container.style.display = 'none';
+                    gray_container.style.display = 'none';
+                    page_container.style.zIndex = 0;
+                    replay_container.style.zIndex = -1;
+                    gray_container.style.zIndex = -99;
+                    game_over = 0; // Allow input
+                }
+
+            }
+            */
         </script>
     </head>
     
@@ -397,7 +459,7 @@
         <div id="rules_container" style="display:none;" lang="ja">
             <div>
                 <div style="float:left; width:90%; padding-top:15px;">WORDLEを6回のトライで推測しましょう。</div>
-                <div style="float:left; width:10%; text-align:right;"><span id="rules_close_box" onclick="open_close_rules();">X</span></div>
+                <div style="float:left; width:10%; text-align:right;"><span id="rules_close_box" onclick="open_close_popup('rules');">X</span></div>
                 <div style="clear:both;"></div>
             </div>
             <p>それぞれの推測は5文字の単語でなければなりません。<br />Enterボタンで決定です。</p>
@@ -409,6 +471,10 @@
             <p><strong>TIR<span style="color:#787c7e;">E</span>D</strong></p>
             <p>Eは正解の英単語に含まれません。</p>
         </div>
+        <div id="replay_container" style="display:none;">
+            <div id="results_msg" class="results_msg">&nbsp;</div>
+            <div><input type="button" id="btn_replay" name="btn_replay" value="REPLAY" class="replay_button" onclick="new_game()"/></div>
+        </div>
         <div id="page_container">
             <div class="page_title" lang="ja">英語 <ruby>WORDLE<rt>ワードル</rt></ruby></div>
             <form>
@@ -418,7 +484,7 @@
                 <input type="radio" id="radio_3" name="grade_level" value="3" onclick="change_grade(this.value)" /><label for="radio_3">2nd Year</label>&nbsp;&nbsp;
                 <input type="radio" id="radio_4" name="grade_level" value="4" onclick="change_grade(this.value)" /><label for="radio_4">3rd Year</label>&nbsp;&nbsp;
                 <input type="radio" id="radio_5" name="grade_level" value="5" onclick="change_grade(this.value)" /><label for="radio_5">All</label>&nbsp;&nbsp;
-                <span id="rules_open_box" onclick="open_close_rules();">?</span>
+                <span id="rules_open_box" onclick="open_close_popup('rules');">?</span>
             </div>
             <script>
                 // Set the default radio button
@@ -521,9 +587,6 @@
                 </div>
             </div>
             <div id="user_msg" class="user_msg">&nbsp;</div>
-            <div id="replay_container" class="replay_container">
-                <input type="button" id="btn_replay" name"btn_replay" value="REPLAY" class="replay_button" onclick="new_game()"/>
-            </div>
             </form>
         </div>
         <div style="color:#FFFFFF;">Copyright &copy; 2022 by Broch Attey</div>
