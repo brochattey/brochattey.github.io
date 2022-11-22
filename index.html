@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <!--
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -8,7 +8,7 @@
 // Year: 2022
 // Created for the purpose of playing Wordle (created by Josh Wardle) with JHS students.
 // All words were taken from the glossary pages of the Sunshine English Course textbooks.
-// This page was created to work offline with no dependencies to external sources.
+// This webpage was created to work offline with no dependencies to external sources.
 // It was designed for both keyboard and touch interfaces.
 //
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -23,9 +23,9 @@
             .guess_container { padding:2px; }
             .guess {height:60px; width:40px; border:2px black solid; font-size:24pt; font-weight:bold; text-align:center; }
             .button_container { padding:2px;}
-            .alphabet_button { height:50px; width:50px; border:2px black solid; font-size:24pt; font-weight:bold; }
-            .enter_button { height:50px; border:2px black solid; font-size:24pt; font-weight:bold; }
-            .back_button { height:50px; border:2px black solid; font-size:24pt;font-weight:bold;  }
+            .alphabet_button { height:50px; width:50px; border:2px black solid; font-size:24pt; font-weight:bold; background-color:#d3d6da; }
+            .enter_button { height:50px; border:2px black solid; font-size:24pt; font-weight:bold; background-color:#d3d6da; }
+            .back_button { height:50px; border:2px black solid; font-size:24pt;font-weight:bold;  background-color:#d3d6da; }
             .replay_container { padding:10px; visibility: hidden;}
             .replay_button { height:50px; border:2px black solid; font-size:24pt; font-weight:bold; background-color:#c9b458; }
             .user_msg {text-align: center; font-size:24pt; font-weight:bold; padding:10px; }
@@ -56,7 +56,7 @@
 
             // Word lists
             var valid_words = [];
-            const es = ['about','again','apple','April','baker','beach','black','brown','chair','China','class','clean','color','dance','dream','drink','Egypt','eight','enjoy','fifth','fifty','first','forty','fruit','glove','grape','great','green','happy','hello','horse','house','India','Italy','Japan','juice','Korea','leave','lemon','lunch','March','melon','mouth','music','never','ninth','nurse','panda','peach','piano','pilot','pizza','place','queen','rainy','right','river','rugby','ruler','salad','salty','seven','sheep','short','sixth','sixty','small','snake','snowy','sorry','Spain','speak','sport','stand','steak','study','sunny','sweet','table','tenth','thank','think','third','three','tiger','tired','under','visit','watch','where','white','world','would'];
+            const es = ['about','again','apple','April','baker','beach','black','brown','chair','China','class','clean','color','dance','dream','drink','Egypt','eight','enjoy','fifth','fifty','first','forty','fruit','glove','grape','great','green','happy','hello','horse','house','India','Italy','Japan','juice','Korea','leave','lemon','lunch','March','melon','mouth','music','never','ninth','nurse','panda','peach','piano','pilot','pizza','place','queen','rainy','right','river','rugby','ruler','salad','salty','seven','sheep','short','sixth','sixty','small','snake','snowy','sorry','Spain','speak','sport','stand','steak','study','sunny','sweet','table','tenth','thank','think','third','three','tiger','tired','under','visit','watch','water','where','white','world','would'];
             const ichi_nen = ['adult','after','angel','anime','apron','beast','break','broke','candy','catch','check','cheer','child','clear','clerk','climb','clock','close','comic','court','crane','drone','early','event','every','fairy','floor','flute','found','fresh','front','funny','hobby','Kenya','koala','large','learn','light','lucky','manga','mango','month','movie','night','often','other','party','phone','plane','point','proud','quiet','quilt','reach','relax','robot','round','sauna','share','shoot','skate','sleep','slope','smart','smile','snack','sound','speed','staff','start','steam','stick','still','tasty','teach','their','there','these','thing','those','today','topic','touch','towel','train','uncle','until','video','which','whose','write','young','yours'];
             const ni_nen = ['above','actor','agree','alone','along','among','award','bacon','blame','bored','bring','build','built','carry','cheap','chess','cloth','coast','could','cover','dirty','eaten','email','enter','fight','flour','goods','guide','heard','heart','heavy','hurry','inner','issue','knife','known','ladle','later','limit','lives','local','lodge','lotus','maybe','meter','minus','model','money','noise','novel','onion','order','paint','paper','peace','penny','piece','plant','prize','ready','renew','rifle','sauce','scale','score','shelf','shout','since','slept','smoke','solve','space','spite','spoke','steal','stole','story','stove','sugar','sweat','taken','taste','teeth','thick','tooth','treat','trick','truck','truly','twice','voice','while','windy','woman','worry','wrong','wrote','yummy'];
             const san_nen = [];
@@ -69,42 +69,62 @@
             const chosen_grade = urlParams.get('level');
 
             // Build the word list for the chosen level
-            var grade_level = 0;
+            var grade_level = 1;
             var word_list = [];
             var correct_word = '';
-            change_grade((chosen_grade == null) ? 1 : chosen_grade);
+            select_new_word();
 
             // Define the list of words by grade
             function change_grade(grade)
-            {
-                // If the grade has changed
+            {                
+                // If the grade has changed, update the grade level
                 if (grade_level != grade) {
-                    // Update the grade level
                     grade_level = grade;
+                    new_game();
+                }
+            }
+            
+            // Select a new random word
+            function select_new_word()
+            {
+                // New game
+                game_over = 0;
+                
+                // Reset the word list
+                word_list = [];
 
-                    // Reset the word list
-                    word_list = [];
+                // Build a new word list
+                if (grade_level == 1) {
+                    word_list = word_list.concat(es);
+                } else if (grade_level == 2) {
+                    word_list = word_list.concat(es, ichi_nen)
+                } else if (grade_level == 3) {
+                    word_list = word_list.concat(es, ichi_nen, ni_nen);
+                } else if (grade_level == 4) {
+                    word_list = word_list.concat(es, ichi_nen, ni_nen, san_nen);
+                } else {
+                    word_list = word_list.concat(valid_words);
+                }
 
-                    // Build a new word list
-                    if (grade == 1) {
-                        word_list = word_list.concat(es);
-                    } else if (grade == 2) {
-                        word_list = word_list.concat(ichi_nen)
-                    } else if (grade == 3) {
-                        word_list = word_list.concat(ni_nen);
-                    } else if (grade == 4) {
-                        word_list = word_list.concat(san_nen);
-                    } else {
-                        word_list = word_list.concat(valid_words);
-                    }
-
+                var seen_words = getCookie('words');
+                correct_word = '';
+                
+                while (correct_word == '') {
                     // Get new answer
                     var randomInt = getRandomInt(0,word_list.length-1);
+                    //correct_word = 'TIGER'; 
                     correct_word = word_list[randomInt].toUpperCase();
-
-                    // For testing
-                    //window.alert(correct_word + " | " + word_list.length);
+                    
+                    // Choose a new word if user has already seen it
+                    if (seen_words != null) {
+                        if (seen_words.indexOf(correct_word) > 0) {
+                            correct_word = '';
+                        }   
+                    }
                 }
+
+                // For testing
+                window.alert(correct_word + " | " + word_list.length);
             }
 
             // Used to choose a random word
@@ -160,6 +180,9 @@
                     // Set the styling of the next box
                     refresh_active();
                     document.getElementById(curr_active).style.border = input_color_active;
+                    
+                    // Hide in case a warning appeared
+                    document.getElementById('user_msg').innerHTML = '&nbsp;'; 
                 }
             }
 
@@ -217,17 +240,21 @@
                 // Check each letter individually
                 for (var i = 1; i <= 5; i++) {
                     var guess_letter = document.getElementById('guess_' + curr_guess + '_' + i).value.toUpperCase();
+                    var letter_bg = document.getElementById('alphabet_' + guess_letter.toLowerCase()).style;
 
                     if (guess_letter == correct_word.charAt(i-1)) {
                         document.getElementById('guess_' + curr_guess + '_' + i).style.backgroundColor = input_color_correct;
-                        document.getElementById('alphabet_' + guess_letter.toLowerCase()).style.backgroundColor = button_color_correct;
+                        letter_bg.backgroundColor = button_color_correct;
                         correct_count++;
                     } else if (correct_word.indexOf(guess_letter) >= 0) {
                         document.getElementById('guess_' + curr_guess + '_' + i).style.backgroundColor = input_color_in_word;
-                        document.getElementById('alphabet_' + guess_letter.toLowerCase()).style.backgroundColor = button_color_in_word;
+                        // Don't change to yellow if it's already green
+                        if (letter_bg.backgroundColor == '') {
+                            letter_bg.backgroundColor = button_color_in_word;
+                        }
                     } else {
                         document.getElementById('guess_' + curr_guess + '_' + i).style.backgroundColor = input_color_not_in_word;
-                        document.getElementById('alphabet_' + guess_letter.toLowerCase()).style.backgroundColor = button_color_not_in_word;
+                        letter_bg.backgroundColor = button_color_not_in_word;
                     }
                 }
 
@@ -245,13 +272,67 @@
                     document.getElementById('user_msg').textContent = "Sorry! The word was " + correct_word;
                     document.getElementById('replay_container').style.visibility = 'visible';
                 }
+                
+                // Save the word to the cookie
+                if (game_over) {
+                    setCookie('words', getCookie('words') + '|' + correct_word, 0);
+                }
 
+            }
+            
+            function setCookie(name,value,days) {
+                var expires = "";
+                if (days) {
+                    var date = new Date();
+                    date.setTime(date.getTime() + (days*24*60*60*1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+            }
+            
+            function getCookie(name) {
+                var nameEQ = name + "=";
+                var ca = document.cookie.split(';');
+                for(var i=0;i < ca.length;i++) {
+                    var c = ca[i];
+                    while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+                }
+                return null;
             }
 
             // Restart game
             function new_game()
             {
-                window.open('?level=' + document.querySelector('input[name="grade_level"]:checked').value, '_self');
+                // Reset guess boxes
+                for (var x = 1; x <= 6; x++) {
+                    for (var y = 1; y <= 5; y++) {
+                        var guess_box = document.getElementById('guess_' + x + '_' + y);
+                        guess_box.style.backgroundColor = '#FFFFFF';
+                        guess_box.style.border = input_color_inactive;
+                        guess_box.value = '';
+                    }
+                }
+
+                // Reset to first guess
+                curr_guess = 1;
+                curr_pos = 1;
+                refresh_active();
+                
+                // Reset keyboard
+                for (var i = 0; i < good_chars.length; i++) {
+                    var letter = good_chars[i].toLowerCase();
+                    if (letter != 'enter' && letter != 'backspace') {
+                        document.getElementById('alphabet_' + letter).style.backgroundColor = button_color_default;   
+                    }
+                }
+                
+                // Reset result box
+                document.getElementById('user_msg').textContent = "";
+                document.getElementById('replay_container').style.visibility = 'hidden';
+                
+                // Select a new random word
+                select_new_word();
             }
 
             // Backspace function
@@ -264,7 +345,7 @@
                     curr_pos = curr_pos - (curr_pos > 1 ? 1 : 0);
                     refresh_active();
                     document.getElementById(curr_active).value = '';
-                    document.getElementById('user_msg').innerHTML = '&nbsp;';   
+                    document.getElementById('user_msg').innerHTML = '&nbsp;'; 
                 }
             }
 
@@ -272,7 +353,9 @@
             function refresh_active()
             {
                 curr_active = 'guess_' + curr_guess + '_' + curr_pos;
-                document.getElementById(curr_active).style.border = input_color_active;
+                if (document.getElementById(curr_active) != null) {
+                    document.getElementById(curr_active).style.border = input_color_active;   
+                }
             }
 
             // Opens or closes the rules box
