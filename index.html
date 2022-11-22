@@ -66,11 +66,10 @@
             valid_words = valid_words.concat(es, ichi_nen, ni_nen, san_nen);
 
             // See if a grade level has already been chosen
-            const urlParams = new URLSearchParams(window.location.search);
-            const chosen_grade = urlParams.get('level');
+            var cookie_grade = getCookie('grade');
 
             // Build the word list for the chosen level
-            var grade_level = 1;
+            var grade_level = (cookie_grade > 1 ? cookie_grade : 1);
             var word_list = [];
             var correct_word = '';
             select_new_word();
@@ -81,6 +80,7 @@
                 // If the grade has changed, update the grade level
                 if (grade_level != grade) {
                     grade_level = grade;
+                    setCookie('grade', grade_level, 0);
                     new_game();
                 }
             }
@@ -279,7 +279,7 @@
                 if (game_over) {
                     var seen_words = getCookie('words');
                     if (seen_words != null) {
-                        setCookie('words', seen_words + '|' + correct_word, 0);   
+                        setCookie('words', seen_words + '|' + correct_word, 0);
                     }
                 }
 
@@ -399,63 +399,18 @@
                 }
 
             }
-            /*
-            // Opens or closes the rules box
-            function open_close_rules() 
-            {
-                var page_container = document.getElementById('page_container');
-                var rules_container = document.getElementById('rules_container');
-                var gray_container = document.getElementById('gray_screen_container');
-
-                // Rules are open
-                if (rules_container.style.display === 'none') {
-                    rules_container.style.display = 'block';
-                    gray_container.style.display = 'block';
-                    page_container.style.zIndex = -99;
-                    gray_container.style.zIndex = -1;
-                    rules_container.style.zIndex = 0;
-                    game_over = 1; // Prevent input
-
-                // Rules are closed
-                } else {
-                    rules_container.style.display = 'none';
-                    gray_container.style.display = 'none';
-                    page_container.style.zIndex = 0;
-                    rules_container.style.zIndex = -1;
-                    gray_container.style.zIndex = -99;
-                    game_over = 0; // Allow input
-                }
-
-            }
             
-            // Opens or closes results box
-            function open_close_results() 
+            // Set the correct grade on load
+            function default_grade_button(btn)
             {
-                var page_container = document.getElementById('page_container');
-                var replay_container = document.getElementById('replay_container');
-                var gray_container = document.getElementById('gray_screen_container');
-
-                // Replay is open
-                if (replay_container.style.display === 'none') {
-                    replay_container.style.display = 'block';
-                    gray_container.style.display = 'block';
-                    page_container.style.zIndex = -99;
-                    gray_container.style.zIndex = -1;
-                    replay_container.style.zIndex = 0;
-                    game_over = 1; // Prevent input
-
-                // Replay is closed
+                cookie_grade = getCookie('grade');
+                
+                if (cookie_grade != null) {
+                    btn.checked = (btn.value == cookie_grade ? 'true' : 'false');   
                 } else {
-                    replay_container.style.display = 'none';
-                    gray_container.style.display = 'none';
-                    page_container.style.zIndex = 0;
-                    replay_container.style.zIndex = -1;
-                    gray_container.style.zIndex = -99;
-                    game_over = 0; // Allow input
+                    if (btn.value = '1') { btn.checked = 'true'; }
                 }
-
             }
-            */
         </script>
     </head>
     
@@ -484,11 +439,11 @@
             <div class="page_title" lang="ja">英語 <ruby>WORDLE<rt>ワードル</rt></ruby></div>
             <form>
             <div style="text-align: center; padding:10px;">
-                <input type="radio" id="radio_1" name="grade_level" value="1" onclick="change_grade(this.value)" /><label for="radio_1">ES</label>&nbsp;&nbsp;
-                <input type="radio" id="radio_2" name="grade_level" value="2" onclick="change_grade(this.value)" /><label for="radio_2">1st Year</label>&nbsp;&nbsp;
-                <input type="radio" id="radio_3" name="grade_level" value="3" onclick="change_grade(this.value)" /><label for="radio_3">2nd Year</label>&nbsp;&nbsp;
-                <input type="radio" id="radio_4" name="grade_level" value="4" onclick="change_grade(this.value)" /><label for="radio_4">3rd Year</label>&nbsp;&nbsp;
-                <input type="radio" id="radio_5" name="grade_level" value="5" onclick="change_grade(this.value)" /><label for="radio_5">All</label>&nbsp;&nbsp;
+                <input type="radio" id="radio_1" name="grade_level" value="1" onclick="change_grade(this.value)" onload="default_grade_button(this)"/><label for="radio_1">ES</label>&nbsp;&nbsp;
+                <input type="radio" id="radio_2" name="grade_level" value="2" onclick="change_grade(this.value)" onload="default_grade_button(this)" /><label for="radio_2">1st Year</label>&nbsp;&nbsp;
+                <input type="radio" id="radio_3" name="grade_level" value="3" onclick="change_grade(this.value)" onload="default_grade_button(this)" /><label for="radio_3">2nd Year</label>&nbsp;&nbsp;
+                <input type="radio" id="radio_4" name="grade_level" value="4" onclick="change_grade(this.value)" onload="default_grade_button(this)" /><label for="radio_4">3rd Year</label>&nbsp;&nbsp;
+                <input type="radio" id="radio_5" name="grade_level" value="5" onclick="change_grade(this.value)" onload="default_grade_button(this)" /><label for="radio_5">All</label>&nbsp;&nbsp;
                 <span id="rules_open_box" onclick="open_close_popup('rules');">?</span>
             </div>
             <script>
