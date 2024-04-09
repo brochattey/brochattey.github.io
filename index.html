@@ -4,8 +4,8 @@
 //////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Coded by Broch Attey
-// Copyright 2022 by Broch Attey
-// Year: 2022
+// Copyright 2024 by Broch Attey
+// Year Created: 2022
 // Created for the purpose of playing Wordle (created by Josh Wardle) with JHS students.
 // All words were taken from the glossary pages of the Sunshine English Course textbooks.
 // This webpage was created to work offline with no dependencies to external sources.
@@ -102,6 +102,7 @@
 
             // Build the word list for the chosen level
             var grade_level = (cookie_grade > 1 ? cookie_grade : 1);
+            var not_cumulative = true;
             var word_list = [];
             var correct_word = '';
             select_new_word();
@@ -117,6 +118,13 @@
                 }
             }
             
+            // Toggle cumulative on and off
+            function toggle_cumulative(value)
+            {
+                not_cumulative = document.getElementById('not_cumulative').checked;
+                change_grade(grade_level);
+            }
+            
             // Select a new random word
             function select_new_word()
             {
@@ -127,16 +135,30 @@
                 word_list = [];
 
                 // Build a new word list
-                if (grade_level == 1) {
-                    word_list = word_list.concat(es);
-                } else if (grade_level == 2) {
-                    word_list = word_list.concat(es, ichi_nen)
-                } else if (grade_level == 3) {
-                    word_list = word_list.concat(es, ichi_nen, ni_nen);
-                } else if (grade_level == 4) {
-                    word_list = word_list.concat(es, ichi_nen, ni_nen, san_nen);
+                if (not_cumulative) {
+                    if (grade_level == 1) {
+                        word_list = word_list.concat(es);
+                    } else if (grade_level == 2) {
+                        word_list = word_list.concat(ichi_nen)
+                    } else if (grade_level == 3) {
+                        word_list = word_list.concat(ni_nen);
+                    } else if (grade_level == 4) {
+                        word_list = word_list.concat(san_nen);
+                    } else {
+                        word_list = word_list.concat(valid_words);
+                    }
                 } else {
-                    word_list = word_list.concat(valid_words);
+                    if (grade_level == 1) {
+                        word_list = word_list.concat(es);
+                    } else if (grade_level == 2) {
+                        word_list = word_list.concat(es, ichi_nen)
+                    } else if (grade_level == 3) {
+                        word_list = word_list.concat(es, ichi_nen, ni_nen);
+                    } else if (grade_level == 4) {
+                        word_list = word_list.concat(es, ichi_nen, ni_nen, san_nen);
+                    } else {
+                        word_list = word_list.concat(valid_words);
+                    }
                 }
 
                 var seen_words = getCookie('words');
@@ -156,7 +178,7 @@
                     }
                 }
 
-                // See the answer for testing
+                // See the answer for testing purposes
                 //window.alert(correct_word + " | " + word_list.length);
             }
 
@@ -462,6 +484,18 @@
             <p>Aは正解英単語の中に含まれますが、位置は違います。</p>
             <p><strong>TIR<span style="color:#787c7e;">E</span>D</strong></p>
             <p>Eは正解の英単語に含まれません。</p>
+            <div style="border-top:1px solid #000000; padding:5px; padding-top:10px;">
+                ES = 小学校<br/>
+                JHS1 = 中学校一年生<br/>
+                JHS2 = 中学校二年生<br/>
+                JHS3 = 中学校三年生<br/>
+                Native = ネイティブ<br/>
+            </div>
+            <div style="border-top:1px solid #000000; padding:5px; padding-top:10px;">
+                <b>Only My Level</b><br/>
+                チェックあり = 正解は選択されたレベルの言葉だけ<br/>
+                チェックなし = 正解はすべての前のレベルの言葉も可能
+            </div>
         </div>
         <div id="replay_container" style="display:none;">
             <div id="results_msg" class="results_msg">&nbsp;</div>
@@ -475,8 +509,9 @@
                 <input type="radio" id="radio_2" name="grade_level" value="2" onclick="change_grade(this.value)" onload="default_grade_button(this)" /><label for="radio_2" title="中学校１年生向け">JHS 1</label>&nbsp;&nbsp;
                 <input type="radio" id="radio_3" name="grade_level" value="3" onclick="change_grade(this.value)" onload="default_grade_button(this)" /><label for="radio_3" title="中学校２年生向け">JHS 2</label>&nbsp;&nbsp;
                 <input type="radio" id="radio_4" name="grade_level" value="4" onclick="change_grade(this.value)" onload="default_grade_button(this)" /><label for="radio_4" title="中学校３年生向け">JHS 3</label>&nbsp;&nbsp;
-                <input type="radio" id="radio_5" name="grade_level" value="5" onclick="change_grade(this.value)" onload="default_grade_button(this)" /><label for="radio_5" title="英語を母国語とする人向け">English Master</label>&nbsp;&nbsp;
-                <span id="rules_open_box" onclick="open_close_popup('rules');">?</span>
+                <input type="radio" id="radio_5" name="grade_level" value="5" onclick="change_grade(this.value)" onload="default_grade_button(this)" /><label for="radio_5" title="英語を母国語とする人向け">Native</label>&nbsp;&nbsp;
+                <input type="checkbox" id="not_cumulative" name="not_cumulative" onclick="toggle_cumulative(this.value)" checked /><label for="not_cumulative" title="前のレベルも入るかどうか">Only My Level</label>&nbsp;&nbsp;
+                <span id="rules_open_box" onclick="open_close_popup('rules');" title="やり方ヘルプ">?</span>
             </div>
             <script>
                 // Set the default radio button
